@@ -9,11 +9,14 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 
+import io.realm.Realm;
 import kasper.android.custom_twitter.R;
+import kasper.android.custom_twitter.adapters.ProfileAdapter;
 import kasper.android.custom_twitter.adapters.TweetAdapter;
 import kasper.android.custom_twitter.callbacks.OnRequestAnsweredListener;
 import kasper.android.custom_twitter.core.MyApp;
 import kasper.android.custom_twitter.extras.LinearDecoration;
+import kasper.android.custom_twitter.models.database.MyData;
 import kasper.android.custom_twitter.models.packets.AnswerGetTweets;
 import kasper.android.custom_twitter.models.packets.RequestGetTweets;
 import kasper.android.custom_twitter.models.packets.base.BaseAnswer;
@@ -22,6 +25,7 @@ public class TweetsActivity extends AppCompatActivity {
 
     private int parentId;
     private long pageId;
+    private long myId;
 
     private RecyclerView commentsRV;
     private FloatingActionButton tweetFAB;
@@ -33,6 +37,12 @@ public class TweetsActivity extends AppCompatActivity {
 
         this.parentId = getIntent().getExtras().getInt("parent-id");
         this.pageId = getIntent().getExtras().getLong("page-id");
+
+        Realm realm = Realm.getDefaultInstance();
+
+        myId = realm.where(MyData.class).findFirst().getHuman().getHumanId();
+
+        realm.close();
 
         this.commentsRV = (RecyclerView) findViewById(R.id.activity_tweets_recycler_view);
         this.tweetFAB = (FloatingActionButton) findViewById(R.id.activity_tweets_tweet_fab);
@@ -65,6 +75,22 @@ public class TweetsActivity extends AppCompatActivity {
         this.readTweetsFromServer();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 123) {
+
+            if (resultCode == RESULT_OK) {
+
+                if (data.getExtras().getString("dialog-result").equals("yes")) {
+                    ((TweetAdapter) commentsRV.getAdapter()).notifyOnYesNoDialogOkResult();
+                }
+            }
+        }
+    }
+
     public void onBackBtnClicked(View view) {
         this.finish();
     }
@@ -91,13 +117,23 @@ public class TweetsActivity extends AppCompatActivity {
 
                 final AnswerGetTweets answerGetTweets = (AnswerGetTweets) rawAnswer;
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
+                try {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                commentsRV.setAdapter(new TweetAdapter(TweetsActivity.this, null, myId
+                                        , pageId, answerGetTweets.tweets));
+                            }
+                            catch (Exception ignored) {
 
-                        commentsRV.setAdapter(new TweetAdapter(TweetsActivity.this, answerGetTweets.tweets));
-                    }
-                });
+                            }
+                        }
+                    });
+                }
+                catch (Exception ignored) {
+
+                }
             }
         });
     }

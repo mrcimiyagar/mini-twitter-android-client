@@ -13,34 +13,55 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import io.realm.Realm;
 import kasper.android.custom_twitter.callbacks.OnRequestAnsweredListener;
-import kasper.android.custom_twitter.models.database.Feed;
 import kasper.android.custom_twitter.models.database.MyData;
 import kasper.android.custom_twitter.models.memory.Human;
 import kasper.android.custom_twitter.models.memory.Tweet;
+import kasper.android.custom_twitter.models.packets.AnswerAcceptFollowRequest;
+import kasper.android.custom_twitter.models.packets.AnswerDeleteTweet;
+import kasper.android.custom_twitter.models.packets.AnswerEditUserBio;
 import kasper.android.custom_twitter.models.packets.AnswerFollow;
+import kasper.android.custom_twitter.models.packets.AnswerGetFeed;
+import kasper.android.custom_twitter.models.packets.AnswerGetFollowRequests;
 import kasper.android.custom_twitter.models.packets.AnswerGetFollowers;
 import kasper.android.custom_twitter.models.packets.AnswerGetFollowings;
 import kasper.android.custom_twitter.models.packets.AnswerGetHumanById;
+import kasper.android.custom_twitter.models.packets.AnswerGetTopTweets;
 import kasper.android.custom_twitter.models.packets.AnswerGetTweets;
+import kasper.android.custom_twitter.models.packets.AnswerIgnoreFollowRequest;
+import kasper.android.custom_twitter.models.packets.AnswerLikeTweet;
 import kasper.android.custom_twitter.models.packets.AnswerLogin;
 import kasper.android.custom_twitter.models.packets.AnswerPostTweet;
 import kasper.android.custom_twitter.models.packets.AnswerRegister;
 import kasper.android.custom_twitter.models.packets.AnswerRequest;
 import kasper.android.custom_twitter.models.packets.AnswerSearchUserTitle;
+import kasper.android.custom_twitter.models.packets.AnswerSwitchProfileMode;
 import kasper.android.custom_twitter.models.packets.AnswerUnFollow;
+import kasper.android.custom_twitter.models.packets.AnswerUnlikeTweet;
+import kasper.android.custom_twitter.models.packets.NotifyFollowRequestAccepted;
+import kasper.android.custom_twitter.models.packets.NotifyFollowRequestIgnored;
 import kasper.android.custom_twitter.models.packets.NotifyNewFollow;
 import kasper.android.custom_twitter.models.packets.NotifyNewTweet;
 import kasper.android.custom_twitter.models.packets.NotifyUnFollow;
+import kasper.android.custom_twitter.models.packets.RequestAcceptFollowRequest;
+import kasper.android.custom_twitter.models.packets.RequestDeleteTweet;
+import kasper.android.custom_twitter.models.packets.RequestEditUserBio;
 import kasper.android.custom_twitter.models.packets.RequestFollow;
+import kasper.android.custom_twitter.models.packets.RequestGetFeed;
+import kasper.android.custom_twitter.models.packets.RequestGetFollowRequests;
 import kasper.android.custom_twitter.models.packets.RequestGetFollowers;
 import kasper.android.custom_twitter.models.packets.RequestGetFollowings;
 import kasper.android.custom_twitter.models.packets.RequestGetHumanById;
+import kasper.android.custom_twitter.models.packets.RequestGetTopTweets;
 import kasper.android.custom_twitter.models.packets.RequestGetTweets;
+import kasper.android.custom_twitter.models.packets.RequestIgnoreFollowRequest;
+import kasper.android.custom_twitter.models.packets.RequestLikeTweet;
 import kasper.android.custom_twitter.models.packets.RequestLogin;
 import kasper.android.custom_twitter.models.packets.RequestPostTweet;
 import kasper.android.custom_twitter.models.packets.RequestRegister;
 import kasper.android.custom_twitter.models.packets.RequestSearchUserTitle;
+import kasper.android.custom_twitter.models.packets.RequestSwitchProfileMode;
 import kasper.android.custom_twitter.models.packets.RequestUnFollow;
+import kasper.android.custom_twitter.models.packets.RequestUnlikeTweet;
 import kasper.android.custom_twitter.models.packets.base.AnswerStatus;
 import kasper.android.custom_twitter.models.packets.base.BaseAnswer;
 import kasper.android.custom_twitter.models.packets.base.BaseNotify;
@@ -49,7 +70,7 @@ import kasper.android.custom_twitter.models.packets.base.BaseRequest;
 public class NetworkHelper {
 
     private static final int connectTimeOut = 5000;
-    private static final String serverIp = /*"192.168.43.23";*/"136.243.229.153";
+    private static final String serverIp = "192.168.43.36";//"136.243.229.153";
     private static final int serverTcpPort = 24500;
     private static final int serverUdpPort = 24501;
 
@@ -85,6 +106,8 @@ public class NetworkHelper {
         client.getKryo().register(NotifyUnFollow.class);
         client.getKryo().register(NotifyNewFollow.class);
         client.getKryo().register(NotifyNewTweet.class);
+        client.getKryo().register(NotifyFollowRequestAccepted.class);
+        client.getKryo().register(NotifyFollowRequestIgnored.class);
         client.getKryo().register(BaseNotify.class);
         client.getKryo().register(AnswerStatus.class);
         client.getKryo().register(RequestRegister.class);
@@ -97,6 +120,16 @@ public class NetworkHelper {
         client.getKryo().register(RequestGetHumanById.class);
         client.getKryo().register(RequestGetFollowers.class);
         client.getKryo().register(RequestGetFollowings.class);
+        client.getKryo().register(RequestEditUserBio.class);
+        client.getKryo().register(RequestLikeTweet.class);
+        client.getKryo().register(RequestUnlikeTweet.class);
+        client.getKryo().register(RequestGetTopTweets.class);
+        client.getKryo().register(RequestGetFollowRequests.class);
+        client.getKryo().register(RequestAcceptFollowRequest.class);
+        client.getKryo().register(RequestIgnoreFollowRequest.class);
+        client.getKryo().register(RequestGetFeed.class);
+        client.getKryo().register(RequestSwitchProfileMode.class);
+        client.getKryo().register(RequestDeleteTweet.class);
         client.getKryo().register(AnswerRequest.class);
         client.getKryo().register(AnswerRegister.class);
         client.getKryo().register(AnswerLogin.class);
@@ -108,6 +141,16 @@ public class NetworkHelper {
         client.getKryo().register(AnswerGetHumanById.class);
         client.getKryo().register(AnswerGetFollowers.class);
         client.getKryo().register(AnswerGetFollowings.class);
+        client.getKryo().register(AnswerEditUserBio.class);
+        client.getKryo().register(AnswerLikeTweet.class);
+        client.getKryo().register(AnswerUnlikeTweet.class);
+        client.getKryo().register(AnswerGetTopTweets.class);
+        client.getKryo().register(AnswerGetFollowRequests.class);
+        client.getKryo().register(AnswerAcceptFollowRequest.class);
+        client.getKryo().register(AnswerIgnoreFollowRequest.class);
+        client.getKryo().register(AnswerGetFeed.class);
+        client.getKryo().register(AnswerSwitchProfileMode.class);
+        client.getKryo().register(AnswerDeleteTweet.class);
         client.getKryo().register(ArrayList.class);
 
         client.addListener(new Listener() {
@@ -142,53 +185,7 @@ public class NetworkHelper {
 
                     Log.d("KasperLogger", "received notify : " + o.toString());
 
-                    if (o instanceof NotifyNewTweet) {
-
-                        Log.d("KasperLogger", "hello !");
-
-                        NotifyNewTweet notifyNewTweet = (NotifyNewTweet) o;
-
-                        Tweet tweet = notifyNewTweet.getTweet();
-
-                        Realm realm = Realm.getDefaultInstance();
-
-                        MyData myData = realm.where(MyData.class).findFirst();
-
-                        if (tweet.getPageId() != myData.getHuman().getHumanId()) {
-
-                            realm.beginTransaction();
-
-                            Feed feed = realm.where(Feed.class).findFirst();
-
-                            kasper.android.custom_twitter.models.database.Human human = null;
-
-                            human = feed.getHumans().where().equalTo("humanId", tweet.getAuthor().getHumanId()).findFirst();
-
-                            if (human == null) {
-                                human = new kasper.android.custom_twitter.models.database.Human();
-                                human.setHumanId(tweet.getAuthor().getHumanId());
-                                feed.getHumans().add(human);
-                            }
-
-                            human.setUserTitle(tweet.getAuthor().getUserTitle());
-
-                            kasper.android.custom_twitter.models.database.Tweet dTweet = new kasper.android.custom_twitter.models.database.Tweet();
-                            dTweet.setTweetId(tweet.getTweetId());
-                            dTweet.setPageId(tweet.getPageId());
-
-                            dTweet.setAuthor(human);
-                            dTweet.setParentId(tweet.getParentId());
-                            dTweet.setContent(tweet.getContent());
-                            dTweet.setTime(tweet.getTime());
-
-                            feed.getTweets().add(0, dTweet);
-
-                            realm.commitTransaction();
-                        }
-
-                        realm.close();
-                    }
-                    else if (o instanceof NotifyNewFollow) {
+                    if (o instanceof NotifyNewFollow) {
 
                         NotifyNewFollow notifyNewFollow = (NotifyNewFollow) o;
 
@@ -201,7 +198,6 @@ public class NetworkHelper {
                         kasper.android.custom_twitter.models.database.Human human = new kasper.android.custom_twitter.models.database.Human();
                         human.setHumanId(notifyNewFollow.getFollowerId());
 
-                        myData.getHuman().setFollowersCount(myData.getHuman().getFollowersCount() + 1);
                         myData.getHuman().getFollowers().add(human);
 
                         realm.commitTransaction();
@@ -210,13 +206,85 @@ public class NetworkHelper {
                     }
                     else if (o instanceof NotifyUnFollow) {
 
+                        NotifyUnFollow notifyUnFollow = (NotifyUnFollow) o;
+
                         Realm realm = Realm.getDefaultInstance();
 
                         MyData myData = realm.where(MyData.class).findFirst();
 
                         realm.beginTransaction();
 
-                        myData.getHuman().setFollowersCount(myData.getHuman().getFollowersCount() - 1);
+                        boolean found = false;
+
+                        int followIndex = 0;
+
+                        for (kasper.android.custom_twitter.models.database.Human human : myData.getHuman().getFollowers()) {
+                            if (human.getHumanId() == notifyUnFollow.getUnFollowerId()) {
+                                found = true;
+                                break;
+                            }
+                            followIndex++;
+                        }
+
+                        if (found) {
+                            myData.getHuman().getFollowers().remove(followIndex);
+                        }
+
+                        realm.commitTransaction();
+
+                        realm.close();
+                    }
+                    else if (o instanceof NotifyFollowRequestAccepted) {
+
+                        NotifyFollowRequestAccepted notifyFollowRequestAccepted = (NotifyFollowRequestAccepted) o;
+
+                        Realm realm = Realm.getDefaultInstance();
+
+                        realm.beginTransaction();
+
+                        MyData myData = realm.where(MyData.class).findFirst();
+
+                        int counter = 0;
+
+                        for (kasper.android.custom_twitter.models.database.Human human : myData.getHuman().getRequested()) {
+                            if (human.getHumanId() == notifyFollowRequestAccepted.getHumanId()) {
+                                break;
+                            }
+                            counter++;
+                        }
+
+                        myData.getHuman().getRequested().remove(counter);
+
+                        kasper.android.custom_twitter.models.database.Human dHuman = new kasper.android.custom_twitter.models.database.Human();
+                        dHuman.setHumanId(notifyFollowRequestAccepted.getHumanId());
+
+                        myData.getHuman().getFollowing().add(dHuman);
+
+                        realm.commitTransaction();
+
+                        realm.close();
+
+                    }
+                    else if (o instanceof NotifyFollowRequestIgnored) {
+
+                        NotifyFollowRequestIgnored notifyFollowRequestAccepted = (NotifyFollowRequestIgnored) o;
+
+                        Realm realm = Realm.getDefaultInstance();
+
+                        realm.beginTransaction();
+
+                        MyData myData = realm.where(MyData.class).findFirst();
+
+                        int counter = 0;
+
+                        for (kasper.android.custom_twitter.models.database.Human human : myData.getHuman().getRequested()) {
+                            if (human.getHumanId() == notifyFollowRequestAccepted.getHumanId()) {
+                                break;
+                            }
+                            counter++;
+                        }
+
+                        myData.getHuman().getRequested().remove(counter);
 
                         realm.commitTransaction();
 

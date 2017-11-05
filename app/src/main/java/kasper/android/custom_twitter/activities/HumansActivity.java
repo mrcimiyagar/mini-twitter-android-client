@@ -35,8 +35,8 @@ public class HumansActivity extends AppCompatActivity {
         final boolean followers = getIntent().getExtras().getBoolean("is-followers-page");
         final long humanId = getIntent().getExtras().getLong("human-id");
 
-        titleTV = findViewById(R.id.activity_humans_title_text_view);
-        contentRV = findViewById(R.id.activity_humans_recycler_view);
+        titleTV = (TextView) findViewById(R.id.activity_humans_title_text_view);
+        contentRV = (RecyclerView) findViewById(R.id.activity_humans_recycler_view);
 
         titleTV.setText(followers ? "دنبال کنندگان" : "دنبال شوندگان");
 
@@ -70,13 +70,22 @@ public class HumansActivity extends AppCompatActivity {
                     result = answerGetFollowings.humans;
                 }
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
+                try {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                contentRV.setAdapter(new SearchHumanAdapter(result));
+                            }
+                            catch (Exception ignored) {
 
-                        contentRV.setAdapter(new SearchHumanAdapter(result));
-                    }
-                });
+                            }
+                        }
+                    });
+                }
+                catch (Exception ignored) {
+
+                }
             }
         });
     }

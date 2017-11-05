@@ -42,71 +42,78 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void run() {
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
+                try {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
 
-                        Realm realm = Realm.getDefaultInstance();
+                                Realm realm = Realm.getDefaultInstance();
 
-                        MyData myData = realm.where(MyData.class).findFirst();
+                                MyData myData = realm.where(MyData.class).findFirst();
 
-                        Auth auth = myData.getAuth();
+                                Auth auth = myData.getAuth();
 
-                        long userId = auth.getUserId();
-                        String passKey = auth.getPassKey();
+                                long userId = auth.getUserId();
+                                String passKey = auth.getPassKey();
 
-                        realm.close();
+                                realm.close();
 
-                        if (userId >= 0 && passKey.length() > 0) {
+                                if (userId >= 0 && passKey.length() > 0) {
 
-                            final RequestLogin requestLogin = new RequestLogin();
-                            requestLogin.userId = userId;
-                            requestLogin.passKey = passKey;
+                                    final RequestLogin requestLogin = new RequestLogin();
+                                    requestLogin.userId = userId;
+                                    requestLogin.passKey = passKey;
 
-                            MyApp.getInstance().getNetworkHelper().pushTCP(requestLogin, new OnRequestAnsweredListener() {
-                                @Override
-                                public void onRequestAnswered(final BaseAnswer rawAnswer) {
-
-                                    runOnUiThread(new Runnable() {
+                                    MyApp.getInstance().getNetworkHelper().pushTCP(requestLogin, new OnRequestAnsweredListener() {
                                         @Override
-                                        public void run() {
+                                        public void onRequestAnswered(final BaseAnswer rawAnswer) {
 
-                                            if (rawAnswer.answerStatus == AnswerStatus.OK) {
+                                            runOnUiThread(new Runnable() {
+                                                @Override
+                                                public void run() {
 
-                                                AnswerLogin answerLogin = (AnswerLogin) rawAnswer;
+                                                    if (rawAnswer.answerStatus == AnswerStatus.OK) {
 
-                                                Realm realm = Realm.getDefaultInstance();
-                                                realm.beginTransaction();
+                                                        AnswerLogin answerLogin = (AnswerLogin) rawAnswer;
 
-                                                Human human = realm.where(MyData.class).findFirst().getHuman();
+                                                        Realm realm = Realm.getDefaultInstance();
+                                                        realm.beginTransaction();
 
-                                                human.setHumanId(requestLogin.userId);
-                                                human.setUserTitle(answerLogin.userTitle);
-                                                human.setPostsCount(answerLogin.postsCount);
-                                                human.setFollowersCount(answerLogin.followersCount);
-                                                human.setFollowingCount(answerLogin.followingCount);
+                                                        Human human = realm.where(MyData.class).findFirst().getHuman();
 
-                                                realm.commitTransaction();
+                                                        human.setHumanId(requestLogin.userId);
+                                                        human.setUserTitle(answerLogin.userTitle);
+                                                        human.setPostsCount(answerLogin.postsCount);
+                                                        human.setUserBio(answerLogin.userBio);
 
-                                                realm.close();
+                                                        realm.commitTransaction();
 
-                                                startActivity(new Intent(RegisterActivity.this, MainActivity.class));
-                                            }
-                                            else {
+                                                        realm.close();
 
-                                                RegisterActivity.this.container.setVisibility(View.VISIBLE);
-                                            }
+                                                        startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+                                                    } else {
+
+                                                        RegisterActivity.this.container.setVisibility(View.VISIBLE);
+                                                    }
+                                                }
+                                            });
                                         }
                                     });
-                                }
-                            });
-                        }
-                        else {
+                                } else {
 
-                            RegisterActivity.this.container.setVisibility(View.VISIBLE);
+                                    RegisterActivity.this.container.setVisibility(View.VISIBLE);
+                                }
+                            }
+                            catch (Exception ignored) {
+
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (Exception ignored) {
+
+                }
             }
         });
     }
@@ -162,8 +169,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     human.setHumanId(requestLogin.userId);
                                     human.setUserTitle(answerLogin.userTitle);
                                     human.setPostsCount(answerLogin.postsCount);
-                                    human.setFollowersCount(answerLogin.followersCount);
-                                    human.setFollowingCount(answerLogin.followingCount);
+                                    human.setUserBio(answerLogin.userBio);
 
                                     realm.commitTransaction();
 

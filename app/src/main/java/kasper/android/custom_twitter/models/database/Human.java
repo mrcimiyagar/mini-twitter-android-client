@@ -9,12 +9,44 @@ public class Human extends RealmObject {
 
     private long humanId;
     private String userTitle;
+    private String userBio;
     private int postsCount;
-    private int followersCount;
-    private int followingCount;
     private RealmList<Human> followers;
     private RealmList<Human> following;
-    private RealmList<Tweet> tweets;
+    private RealmList<Human> requested;
+    private boolean isPrivate;
+
+    public long getHumanId() {
+        return humanId;
+    }
+
+    public void setHumanId(long humanId) {
+        this.humanId = humanId;
+    }
+
+    public String getUserTitle() {
+        return userTitle;
+    }
+
+    public void setUserTitle(String userTitle) {
+        this.userTitle = userTitle;
+    }
+
+    public String getUserBio() {
+        return userBio;
+    }
+
+    public void setUserBio(String userBio) {
+        this.userBio = userBio;
+    }
+
+    public int getPostsCount() {
+        return postsCount;
+    }
+
+    public void setPostsCount(int postsCount) {
+        this.postsCount = postsCount;
+    }
 
     public RealmList<Human> getFollowers() {
         return followers;
@@ -32,51 +64,19 @@ public class Human extends RealmObject {
         this.following = following;
     }
 
-    public long getHumanId() {
-        return humanId;
+    public RealmList<Human> getRequested() {
+        return requested;
     }
 
-    public int getPostsCount() {
-        return postsCount;
+    public void setRequested(RealmList<Human> requested) {
+        this.requested = requested;
     }
 
-    public void setPostsCount(int postsCount) {
-        this.postsCount = postsCount;
+    public boolean isPrivate() {
+        return isPrivate;
     }
 
-    public int getFollowersCount() {
-        return followersCount;
-    }
-
-    public void setFollowersCount(int followersCount) {
-        this.followersCount = followersCount;
-    }
-
-    public int getFollowingCount() {
-        return followingCount;
-    }
-
-    public void setFollowingCount(int followingCount) {
-        this.followingCount = followingCount;
-    }
-
-    public void setHumanId(long humanId) {
-        this.humanId = humanId;
-    }
-
-    public String getUserTitle() {
-        return userTitle;
-    }
-
-    public void setUserTitle(String userTitle) {
-        this.userTitle = userTitle;
-    }
-
-    public RealmList<Tweet> getTweets() {
-        return tweets;
-    }
-
-    public void setTweets(RealmList<Tweet> tweets) {
-        this.tweets = tweets;
+    public void setPrivate(boolean aPrivate) {
+        isPrivate = aPrivate;
     }
 }

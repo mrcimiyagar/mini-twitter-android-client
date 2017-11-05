@@ -54,25 +54,34 @@ public class PostTweetActivity extends AppCompatActivity {
                 @Override
                 public void onRequestAnswered(final BaseAnswer rawAnswer) {
 
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                    try {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
 
-                            if (rawAnswer.answerStatus == AnswerStatus.OK) {
+                                try {
+                                    if (rawAnswer.answerStatus == AnswerStatus.OK) {
 
-                                AnswerPostTweet answerPostTweet = (AnswerPostTweet) rawAnswer;
+                                        //AnswerPostTweet answerPostTweet = (AnswerPostTweet) rawAnswer;
 
-                                Tweet tweet = answerPostTweet.tweet;
+                                        //Tweet tweet = answerPostTweet.tweet;
 
-                                Toast.makeText(PostTweetActivity.this, "Tweet posted successfully.", Toast.LENGTH_SHORT).show();
-                                setResult(RESULT_OK, new Intent().putExtra("tweet", tweet));
-                                PostTweetActivity.this.finish();
+                                        Toast.makeText(PostTweetActivity.this, "Tweet posted successfully.", Toast.LENGTH_SHORT).show();
+                                        //setResult(RESULT_OK, new Intent().putExtra("tweet", tweet));
+                                        PostTweetActivity.this.finish();
+                                    } else {
+                                        Toast.makeText(PostTweetActivity.this, "There was error posting tweet. " + rawAnswer.answerStatus, Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                                catch (Exception ignored) {
+
+                                }
                             }
-                            else {
-                                Toast.makeText(PostTweetActivity.this, "There was error posting tweet. " + rawAnswer.answerStatus, Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
+                        });
+                    }
+                    catch (Exception ignored) {
+
+                    }
                 }
             });
         }

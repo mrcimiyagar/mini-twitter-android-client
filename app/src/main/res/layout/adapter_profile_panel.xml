@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="56dp">
+
+    <ImageButton
+        android:id="@+id/adapter_profile_panel_edit_image_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/edit"
+        android:tint="#000"/>
+
+    <ImageButton
+        android:id="@+id/adapter_profile_panel_requests_image_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/follow"
+        android:tint="#000"/>
+
+    <ImageButton
+        android:id="@+id/adapter_profile_panel_settings_image_button"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/settings"
+        android:tint="#000"/>
+
+</LinearLayout>

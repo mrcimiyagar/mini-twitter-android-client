@@ -1,10 +1,10 @@
 package kasper.android.custom_twitter.activities;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -26,13 +26,19 @@ import kasper.android.custom_twitter.models.packets.base.BaseAnswer;
 
 public class ProfileActivity extends AppCompatActivity {
 
+    long myHumanId;
+
     long humanId;
     String userTitle;
+    String userBio;
     int postsCount;
     int followersCount;
     int followingsCount;
     boolean isMe;
     boolean isFollowed;
+    boolean isRequested;
+    boolean isPrivate;
+    int requestsCount;
 
     private RecyclerView contentRV;
 
@@ -41,7 +47,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        this.contentRV = findViewById(R.id.activity_profile_content_recycler_view);
+        this.contentRV = (RecyclerView) findViewById(R.id.activity_profile_content_recycler_view);
 
         this.contentRV.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
@@ -51,12 +57,13 @@ public class ProfileActivity extends AppCompatActivity {
 
         final MyData myData = realm.where(MyData.class).findFirst();
 
-        long myHumanId = myData.getHuman().getHumanId();
+        myHumanId = myData.getHuman().getHumanId();
 
         isMe = myHumanId == humanId;
 
         if (isMe) {
             userTitle = myData.getHuman().getUserTitle();
+            userBio = myData.getHuman().getUserBio();
             postsCount = myData.getHuman().getPostsCount();
             followersCount = myData.getHuman().getFollowers().size();
             followingsCount = myData.getHuman().getFollowing().size();
@@ -86,15 +93,27 @@ public class ProfileActivity extends AppCompatActivity {
                                 MyData myData = realm.where(MyData.class).findFirst();
 
                                 isFollowed = myData.getHuman().getFollowing().where().equalTo("humanId", humanId).count() > 0;
+                                isRequested = myData.getHuman().getRequested().where().equalTo("humanId", humanId).count() > 0;
 
                                 realm.close();
 
                                 userTitle = human.getUserTitle();
+                                userBio = human.getUserBio();
                                 postsCount = human.getPostsCount();
                                 followersCount = human.getFollowersCount();
                                 followingsCount = human.getFollowingCount();
+                                isPrivate = human.isProfilePrivate();
+                                requestsCount = answerGetHumanById.requestCounts;
 
-                                readTweets();
+                                if (!isPrivate || isFollowed || isMe) {
+                                    readTweets();
+                                }
+                                else {
+                                    contentRV.setAdapter(new ProfileAdapter(ProfileActivity.this,
+                                            null, myHumanId, isMe, false, isRequested, true, 0, humanId
+                                            , userTitle, userBio, postsCount, followersCount
+                                            , followingsCount, new ArrayList<Tweet>()));
+                                }
                             }
                         }
                     });
@@ -103,6 +122,22 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         realm.close();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 123) {
+
+            if (resultCode == RESULT_OK) {
+
+                if (data.getExtras().getString("dialog-result").equals("yes")) {
+                    ((ProfileAdapter) contentRV.getAdapter()).notifyOnYesNoDialogOkResult();
+                }
+            }
+        }
     }
 
     private void readTweets() {
@@ -115,19 +150,31 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onRequestAnswered(final BaseAnswer rawAnswer) {
 
-                ProfileActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
+                try {
+                    ProfileActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
 
-                        if (rawAnswer.answerStatus == AnswerStatus.OK) {
+                            try {
 
-                            AnswerGetTweets answerGetTweets = (AnswerGetTweets) rawAnswer;
+                                if (rawAnswer.answerStatus == AnswerStatus.OK) {
 
-                            contentRV.setAdapter(new ProfileAdapter(ProfileActivity.this, isMe, isFollowed, humanId
-                                    , userTitle, postsCount, followersCount, followingsCount, answerGetTweets.tweets));
+                                    AnswerGetTweets answerGetTweets = (AnswerGetTweets) rawAnswer;
+
+                                    contentRV.setAdapter(new ProfileAdapter(ProfileActivity.this,
+                                            null, myHumanId, isMe, isFollowed, isRequested, isPrivate
+                                            , requestsCount, humanId, userTitle, userBio, postsCount
+                                            , followersCount, followingsCount, answerGetTweets.tweets));
+                                }
+                            } catch (Exception ignored) {
+
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (Exception ignored) {
+
+                }
             }
         });
     }

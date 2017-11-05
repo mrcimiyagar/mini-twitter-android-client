@@ -31,9 +31,9 @@ public class MainActivity extends AppCompatActivity {
         this.profileFragment = new ProfileFragment();
 
         getSupportFragmentManager().beginTransaction().add(R.id.activity_main_fragment_container,
-                this.feedFragment, "feed-fragment").commit();
+                this.profileFragment, "profile-fragment").commit();
 
-        this.selectView(findViewById(R.id.activity_main_feed_button));
+        this.selectView(findViewById(R.id.activity_main_profile_button));
     }
 
     public void onFeedBtnClicked(View view) {

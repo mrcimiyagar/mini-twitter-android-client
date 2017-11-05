@@ -11,12 +11,16 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import java.util.ArrayList;
 
 import io.realm.Realm;
 import kasper.android.custom_twitter.R;
+import kasper.android.custom_twitter.activities.EditProfileActivity;
 import kasper.android.custom_twitter.activities.PostTweetActivity;
+import kasper.android.custom_twitter.activities.RequestsActivity;
+import kasper.android.custom_twitter.activities.SettingsActivity;
 import kasper.android.custom_twitter.adapters.ProfileAdapter;
 import kasper.android.custom_twitter.callbacks.OnRequestAnsweredListener;
 import kasper.android.custom_twitter.core.MyApp;
@@ -36,9 +40,11 @@ public class ProfileFragment extends Fragment {
 
     long humanId;
     String userTitle;
+    String userBio;
     int postsCount;
     int followersCount;
     int followingsCount;
+    int requestsCount;
 
     private RecyclerView contentRV;
     private FloatingActionButton writeFAB;
@@ -57,20 +63,6 @@ public class ProfileFragment extends Fragment {
 
         this.contentRV.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         this.contentRV.addItemDecoration(new LinearDecoration(0, (int)(64 * getResources().getDisplayMetrics().density)));
-
-        Realm realm = Realm.getDefaultInstance();
-
-        MyData myData = realm.where(MyData.class).findFirst();
-
-        humanId = myData.getHuman().getHumanId();
-        userTitle = myData.getHuman().getUserTitle();
-        postsCount = myData.getHuman().getPostsCount();
-        followersCount = myData.getHuman().getFollowers().size();
-        followingsCount = myData.getHuman().getFollowing().size();
-
-        this.contentRV.setAdapter(new ProfileAdapter((AppCompatActivity)getActivity(), true, false, humanId
-                , userTitle, postsCount, followersCount, followingsCount, new ArrayList<kasper.android
-                .custom_twitter.models.memory.Tweet>()));
 
         this.writeFAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,6 +91,61 @@ public class ProfileFragment extends Fragment {
         return contentView;
     }
 
+    @Override
+    public void onResume() {
+
+        super.onResume();
+
+        Realm realm = Realm.getDefaultInstance();
+
+        MyData myData = realm.where(MyData.class).findFirst();
+
+        humanId = myData.getHuman().getHumanId();
+        userTitle = myData.getHuman().getUserTitle();
+        userBio = myData.getHuman().getUserBio();
+        postsCount = myData.getHuman().getPostsCount();
+        followersCount = myData.getHuman().getFollowers().size();
+        followingsCount = myData.getHuman().getFollowing().size();
+
+        realm.close();
+
+        this.readMyTweets();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        Log.d("KasperLogger", "test -1");
+
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Log.d("KasperLogger", "test 0");
+
+        if (requestCode == 4) {
+
+            if (resultCode == RESULT_OK) {
+
+                readMyTweets();
+            }
+        }
+        else if (requestCode == 123) {
+
+            Log.d("KasperLogger", "test 1");
+
+            if (resultCode == RESULT_OK) {
+
+                Log.d("KasperLogger", "test 2");
+
+                if (data.getExtras().getString("dialog-result").equals("yes")) {
+
+                    Log.d("KasperLogger", "test 3");
+
+                    ((ProfileAdapter) contentRV.getAdapter()).notifyOnYesNoDialogOkResult();
+                }
+            }
+        }
+    }
+
     private void readMyTweets() {
 
         RequestGetHumanById requestGetHumanById = new RequestGetHumanById();
@@ -108,7 +155,7 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onRequestAnswered(BaseAnswer rawAnswer) {
 
-                AnswerGetHumanById answerGetHumanById = (AnswerGetHumanById) rawAnswer;
+                final AnswerGetHumanById answerGetHumanById = (AnswerGetHumanById) rawAnswer;
 
                 humanId = answerGetHumanById.human.getHumanId();
                 postsCount = answerGetHumanById.human.getPostsCount();
@@ -123,47 +170,35 @@ public class ProfileFragment extends Fragment {
                     @Override
                     public void onRequestAnswered(final BaseAnswer rawAnswer) {
 
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+                        try {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
 
-                                if (rawAnswer.answerStatus == AnswerStatus.OK) {
+                                    try {
+                                        if (rawAnswer.answerStatus == AnswerStatus.OK) {
 
-                                    AnswerGetTweets answerGetTweets = (AnswerGetTweets) rawAnswer;
+                                            AnswerGetTweets answerGetTweets = (AnswerGetTweets) rawAnswer;
 
-                                    contentRV.setAdapter(new ProfileAdapter((AppCompatActivity)getActivity(), true, false, humanId
-                                            , userTitle, postsCount, followersCount, followingsCount, answerGetTweets.tweets));
+                                            requestsCount = answerGetHumanById.requestCounts;
+
+                                            contentRV.setAdapter(new ProfileAdapter((AppCompatActivity) getActivity(),
+                                                    ProfileFragment.this, humanId, true, false, false, false, requestsCount, humanId
+                                                    , userTitle, userBio, postsCount, followersCount, followingsCount, answerGetTweets.tweets));
+                                        }
+                                    }
+                                    catch (Exception ignored) {
+
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
+                        catch (Exception ignored) {
+
+                        }
                     }
                 });
             }
         });
-    }
-
-    @Override
-    public void onResume() {
-
-        super.onResume();
-
-        this.readMyTweets();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 4) {
-
-            if (resultCode == RESULT_OK) {
-
-                kasper.android.custom_twitter.models.memory.Tweet tweet = (kasper.android.custom_twitter
-                        .models.memory.Tweet) data.getExtras().getSerializable("tweet");
-
-                readMyTweets();
-            }
-        }
     }
 }

@@ -72,13 +72,31 @@ public class SearchFragment extends Fragment {
 
                             searchResults = answerSearchUserTitle.humans;
 
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
+                            if (searchResults.size() == 0) {
 
-                                    itemsRV.setAdapter(new SearchHumanAdapter(searchResults));
-                                }
-                            });
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                        Toast.makeText(getActivity(), "کاربری با این نام وجود ندارد", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                            }
+
+                            try {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            itemsRV.setAdapter(new SearchHumanAdapter(searchResults));
+                                        } catch (Exception ignored) {
+
+                                        }
+                                    }
+                                });
+                            } catch (Exception ignored) {
+
+                            }
                         }
                     });
                 }

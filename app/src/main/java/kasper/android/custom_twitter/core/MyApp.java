@@ -5,7 +5,6 @@ import android.app.Application;
 import io.realm.Realm;
 import kasper.android.custom_twitter.helpers.NetworkHelper;
 import kasper.android.custom_twitter.models.database.Auth;
-import kasper.android.custom_twitter.models.database.Feed;
 import kasper.android.custom_twitter.models.database.Human;
 import kasper.android.custom_twitter.models.database.MyData;
 
@@ -48,10 +47,9 @@ public class MyApp extends Application {
             Human human = realm.createObject(Human.class);
             human.setHumanId(-1);
             human.setUserTitle("");
+            human.setUserBio("");
 
             myData.setHuman(human);
-
-            Feed feed = realm.createObject(Feed.class);
 
             realm.commitTransaction();
         }
